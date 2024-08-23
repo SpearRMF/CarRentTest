@@ -39,12 +39,13 @@ public class WebAction {
 	//依地點與時間為NULL(目前沒訂單)篩選
 	@PostMapping("searchPlace")
 	public String searchPlace(@RequestParam("chplace") String chplace, 
-            @RequestParam("chdate") String chdate, 
+            @RequestParam("chdate") String chdate, @RequestParam("redate") String redate,
             Model model) {
 		String sqlStr = "select * from car where C_Location like ? And Car_Status like 'unuse' And Date IS NULL;";
 		List<Map<String, Object>> dataList = jdbcTemplate.queryForList(sqlStr,chplace);
 		model.addAttribute("cars", dataList);
 	    model.addAttribute("chdate", chdate);
+	    model.addAttribute("redate", redate);
 	    
 		return "menu";
 	}
@@ -76,14 +77,18 @@ public class WebAction {
 	    
 	    return "rentOrder";  
 	}
-	//實際應用預定將傳值給金流
+	//訂單呈現
 	@PostMapping("/order2")
-	public String processOrder2(@RequestParam("selectedCar") Integer selectedCarId, Model model) {
+	public String processOrder2(@RequestParam("selectedCar") Integer selectedCarId,
+			@RequestParam("chdate") String chdate, @RequestParam("redate") String redate,
+			Model model) {
 	    String sql = "SELECT * FROM car WHERE CarID = ?";
 	    CarVo selectedCar = jdbcTemplate.queryForObject(sql, new Object[] {selectedCarId},
         		new BeanPropertyRowMapper<CarVo>(CarVo.class));
 	    
-	    model.addAttribute("selectedCar", selectedCar);   
+	    model.addAttribute("selectedCar", selectedCar);
+	    model.addAttribute("chdate", chdate);
+	    model.addAttribute("redate", redate);
 	    return "rentOrder";
 	}
 	//生成訂單編號

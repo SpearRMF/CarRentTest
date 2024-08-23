@@ -8,8 +8,10 @@
 <title>Insert title here</title>
 </head>
 <body>
-<form method="post" action="payment">
-<p>訂單號碼: ${orderNumber}</p>
+<p>取車日期 : ${chdate}</p><br/>
+    
+    <p>還車日期 : ${redate}</p>
+    
 <p>Debug: selectedCar = ${selectedCar}</p>
 <p>您選擇的車輛:</p>
 <table border="1">
@@ -32,8 +34,9 @@
 </table>
 <form action="payment" method="post">
     <input type="hidden" name="carId" value="${selectedCar.carID}">
+    <input type="hidden" name="chdate" value="${chdate}">
+    <input type="hidden" name="redate" value="${redate}">
     <input type="submit" value="Confirm Order">
-</form>
 </form>
 </body>
 </html>

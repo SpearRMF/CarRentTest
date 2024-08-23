@@ -26,9 +26,11 @@
             <option value="Hualien">花蓮</option>
             <option value="Taitung">台東</option>
         </select><br/>
-        <p>輸入日期</p>
-		<input type="date" name = "chdate" /><br>
-		<input type="submit"name="set"value="送出日期與地點"/>
+        <p>輸入訂車日期</p>
+		<input type="date" name = "chdate" /><br/>
+		<p>輸入還車日期</p>		
+		<input type="date" name = "redate" /><br/>
+		<br/><input type="submit"name="set"value="送出日期與地點"/>
 	</form>
 </body>
 </html>

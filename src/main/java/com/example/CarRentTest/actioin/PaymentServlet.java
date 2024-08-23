@@ -2,10 +2,10 @@ package com.example.CarRentTest.actioin;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Random;
 
@@ -69,29 +69,38 @@ public class PaymentServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession session = req.getSession();//留著適用多請求共享數據
         int memberID=1;//假設客戶ID
-        int days=7;//假設租借7天
-        Integer carId = Integer.parseInt(req.getParameter("carId"));//網頁傳值Carid
+        Integer carId = Integer.parseInt(req.getParameter("carId"));//接收Carid預定從資料庫要求資料
+        String chdateStr = req.getParameter("chdate");//預定轉入資料庫紀錄Car,Order_detail
+        String redateStr = req.getParameter("redate");
+        
+        DateTimeFormatter formatreq = DateTimeFormatter.ofPattern("yyyy-MM-dd");//日期轉換格式並計算所需數值
+        LocalDate chdate = LocalDate.parse(chdateStr, formatreq);
+        LocalDate redate = LocalDate.parse(redateStr, formatreq);
+        int daysBetween = (int) ChronoUnit.DAYS.between(chdate, redate);//計算天數轉入資輛庫Order_detail
+        
         String sql = "SELECT * FROM car WHERE CarID like ? And Car_Status like 'unuse'";
         Map data = jdbcTemplate.queryForMap(sql, carId);//從Carid取得資料並確認是否為unuse
-        String cartype = (String) data.get("CarType");//轉入資料庫紀錄Order,Order_detail
-        String carplace = (String) data.get("C_Location");//轉入資料庫紀錄Order,Order_detail
-        Integer price = (Integer) data.get("Price");
-        String odPrice = String.valueOf(price);//生成訂單價格並轉為字串
+        
+        String cartype = (String) data.get("CarType");//獲取車型，預定轉入資料庫紀錄Order,Order_detail
+        String carplace = (String) data.get("C_Location");//獲取地點，預定轉入資料庫紀錄Order,Order_detail
+        Integer price = (Integer) data.get("Price");      
+        String odPrice = String.valueOf(price);//訂單價格並轉為字串，預定轉金流
+        
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");//時間格式設定
 	    String dateTime = LocalDateTime.now().format(formatter);//生成訂單時間
-	    String dateOnly = LocalDateTime.now().toLocalDate().toString();//轉入資料庫紀錄Order_detail
 	    String orderNumber = generateOrderNumber();//生成訂單編號"日期時間+亂碼"
 	    BigDecimal odnub = new BigDecimal(orderNumber);//將訂單編號轉為固定值，轉入資料庫Order,Order_detail
-        String sqlup = "UPDATE car set Car_Status = 'use' where CarID like ?";//更新Car狀態為use
+	    
+        String sqlup = "UPDATE car set Car_Status = 'use', Date = ? where CarID like ?";//更新Car狀態為use
         String sqlodtail ="insert into order_detail (Detail_ID, CarType, Price, Date, MemberID, Days, Location) "
 	    		+ "VALUES (?, ?, ?, ?, ?, ?, ?)";//新增訂單細節
         String sqlod ="insert into `order` (MemberID,Detail_ID,Od_Status) "
 	    		+ "VALUES (?, ?, ?)";//新增訂單與訂單狀態
         try {
         		//更新Car
-			jdbcTemplate.update(sqlup,carId);
+			jdbcTemplate.update(sqlup,chdateStr,carId);
 			//更新Order_detail
-			jdbcTemplate.update(sqlodtail,odnub,cartype,price,dateOnly,memberID,days,carplace);
+			jdbcTemplate.update(sqlodtail,odnub,cartype,price,chdateStr,memberID,daysBetween,carplace);
 			//更新Order
 			jdbcTemplate.update(sqlod,memberID,odnub,"renting");
 			System.out.println("新增成功，可確認資料庫");

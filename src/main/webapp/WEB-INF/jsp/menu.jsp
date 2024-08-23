@@ -9,7 +9,10 @@
 <body>
     <h1>Available Cars</h1>
     <form action="order2" method="post">
-    <p>取車日期: ${chdate}</p>
+    <p>取車日期 : ${chdate}</p><br/>
+    <input type="hidden" name="chdate" value="${chdate}">
+    <p>還車日期 : ${redate}</p>
+    <input type="hidden" name="redate" value="${redate}">
     <table border="1">
         <thead>
             <tr>
